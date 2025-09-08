@@ -21,6 +21,7 @@ def extract_clean_words_with_timestamps(audio_path: str, min_len: int = 3) -> li
     clean_words = []
     for segment in segments:
         for word in segment.words:
+            print(word.word)
             cleaned = re.sub(r'[^a-zA-Zа-яА-ЯёЁ]', '', word.word.lower())
             cleaned = cleaned.replace('ё', 'е')
             if len(cleaned) >= min_len and end_bad_word(trie, cleaned) and (word.end - word.start) <= 2.5:
@@ -31,7 +32,7 @@ def extract_clean_words_with_timestamps(audio_path: str, min_len: int = 3) -> li
                 })
 
     return clean_words
-file_name = "1.mp3"
+file_name = "маты.wav"
 bad_words_timestamps = extract_clean_words_with_timestamps(file_name)
 print(bad_words_timestamps)
 print(f"количетсво матов {len(bad_words_timestamps)}")
@@ -40,7 +41,7 @@ censor_audio_volume(
     input_path=file_name,
     output_path="censored_"+file_name,
     timestamps=bad_words_timestamps,
-    gap_before=0.05,   # 50 мс оставить перед словом (чтобы слышалась первая буква)
-    gap_after=-0.05,     # 100 мс оставить после слова (последняя буква)
+    gap_before_percent=-0.2,   # 50 мс оставить перед словом (чтобы слышалась первая буква)
+    gap_after_percent=-0.2,     # 100 мс оставить после слова (последняя буква)
     reduction_db=-76   # уменьшить громкость на 40 дБ (почти полное заглушение)
 )

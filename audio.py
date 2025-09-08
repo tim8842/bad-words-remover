@@ -47,8 +47,8 @@ def censor_audio_volume(
     input_path: str,
     output_path: str,
     timestamps: list[dict],
-    gap_before: float = 0.0,
-    gap_after: float = 0.0,
+    gap_before_percent: float = -0.1,  # 10% до начала
+    gap_after_percent: float = -0.1,   # 10% после конца
     reduction_db: float = -30
 ):
     audio = AudioSegment.from_file(input_path)
@@ -59,8 +59,16 @@ def censor_audio_volume(
     cursor = 0  # миллисекунды
 
     for entry in timestamps:
-        start = int(max(0, (entry['start'] - gap_before) * 1000))
-        end = int(min(audio_length, (entry['end'] + gap_after) * 1000))
+        seg_start_ms = entry['start'] * 1000
+        seg_end_ms = entry['end'] * 1000
+        seg_length = seg_end_ms - seg_start_ms
+
+        # Считаем смещения по процентам
+        before_shift = seg_length * gap_before_percent
+        after_shift = seg_length * gap_after_percent
+
+        start = int(max(0, seg_start_ms - before_shift))
+        end = int(min(audio_length, seg_end_ms + after_shift))
 
         # Добавляем неизменённый участок
         if start > cursor:
